@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from redis import Redis
 from sqlmodel import SQLModel
+from app.models.schemas import User, Category, Product, Order, OrderItem, Payment
 
 # Import the database engine we created in db.py
 from app.db import engine
