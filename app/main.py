@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from redis import Redis
 from sqlmodel import SQLModel
 from app.models.schemas import User, Category, Product, Order, OrderItem, Payment
-from app.api.v1.endpoints import auth
+from app.api.v1.endpoints import auth, categories
 
 # Import the database engine we created in db.py
 from app.db import engine
@@ -44,3 +44,4 @@ def system_health_check():
 
 
 app.include_router(auth.router)
+app.include_router(categories.router)
