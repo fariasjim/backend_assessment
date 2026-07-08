@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from app.models.schemas import User, UserAuthRequest, UserResponse, UserRole
 from app.core.security import hash_password, verify_password, create_access_token
+from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Identity & Authentication"])
 COOKIE_NAME = "access_token"
@@ -73,3 +74,10 @@ async def authenticate_user(
 async def delete_cookie(response: Response):
     response.delete_cookie(key=COOKIE_NAME, httponly=True, samesite="lax")
     return {"message": "Logout Successful"}
+
+
+@router.get("/me", response_model=UserResponse)
+async def get_authenticated_user_profile(
+    current_user: User = Depends(get_current_user),
+):
+    return current_user
