@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from redis import Redis
 from sqlmodel import SQLModel
 from app.models.schemas import User, Category, Product, Order, OrderItem, Payment
+from app.api.v1.endpoints import auth
 
 # Import the database engine we created in db.py
 from app.db import engine
@@ -40,3 +41,6 @@ def system_health_check():
         "environment": os.getenv("ENV_MODE", "unknown"),
         "services": {"api_gateway": "running", "redis_cache": redis_alive},
     }
+
+
+app.include_router(auth.router)

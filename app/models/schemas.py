@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import List, Optional
 
+from pydantic import BaseModel, EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -25,6 +26,21 @@ class PaymentStatus(str, Enum):
     PENDING = "pending"
     COMPLETED = "completed"
     FAILED = "failed"
+
+
+class UserAuthRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class UserResponse(BaseModel):
+    id: int
+    email: str
+    role: UserRole
+    is_active: bool
+
+    class Config:
+        from_attributes = True
 
 
 class User(SQLModel, table=True):
