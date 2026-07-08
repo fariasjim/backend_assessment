@@ -1,9 +1,10 @@
+import json
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from pydantic import BaseModel
-from app.db import get_db
+from app.db import get_db, redis_client
 from app.models.schemas import Category, UserRole
 from app.api.deps import RoleChecker
 
@@ -57,6 +58,10 @@ async def create_category(
     new_category = Category(
         name=payload.name, slug=payload.slug, parent_id=payload.parent_id
     )
+    try:
+        await redis_client.delete(f"category_tree:{payload.parent_id}")
+    except Exception:
+        pass
     db.add(new_category)
     await db.commit()
     await db.refresh(new_category)
@@ -71,11 +76,21 @@ async def list_all_categories(db: AsyncSession = Depends(get_db)):
 
 @router.get("/{category_id}/subcategories", response_model=List[int])
 async def get_subcategory_tree(category_id: int, db: AsyncSession = Depends(get_db)):
-    statement = select(Category).where(Category.id == category_id)
-    result = await db.execute(statement)
-    if not result.scalar_one_or_none():
+    base_cat = await db.get(Category, category_id)
+    if not base_cat:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Target category not found"
         )
+    cache_key = f"category_tree:{category_id}"
+    try:
+        cached_data = await redis_client.get(cache_key)
+        if cached_data:
+            return json.loads(cached_data)
+    except Exception:
+        pass
     descendants = await get_all_descendant_ids(category_id, db)
+    try:
+        await redis_client.setex(cache_key, 3600, json.dumps(descendants))
+    except Exception:
+        pass
     return descendants

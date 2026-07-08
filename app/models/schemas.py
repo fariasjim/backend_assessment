@@ -1,7 +1,6 @@
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
-
 from pydantic import BaseModel, EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -63,14 +62,16 @@ class Category(SQLModel, table=True):
 
 class Product(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    name: str = Field(index=True, nullable=False)
-    description: Optional[str] = Field(default=None)
-    price: float = Field(nullable=False)
-    stock: int = Field(default=0, nullable=False)
-    category_id: int = Field(foreign_key="category.id", nullable=False)
+    sku: str = Field(unique=True, index=True)
+    name: str
+    description: Optional[str] = None
+    price: float
+    stock: int
+    status: str = Field(default="active")
+    category_id: Optional[int] = Field(default=None, foreign_key="category.id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    category: Category = Relationship(back_populates="products")
-    order_items: List["OrderItem"] = Relationship(back_populates="product")
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    category: Optional["Category"] = Relationship(back_populates="products")
 
 
 class Order(SQLModel, table=True):

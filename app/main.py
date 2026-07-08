@@ -4,15 +4,12 @@ from fastapi import FastAPI
 from redis import Redis
 from sqlmodel import SQLModel
 from app.models.schemas import User, Category, Product, Order, OrderItem, Payment
-from app.api.v1.endpoints import auth, categories
-
-# Import the database engine we created in db.py
+from app.api.v1.endpoints import auth, categories, products
 from app.db import engine
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # This automatically builds your SQLite tables inside the container on boot
     async with engine.begin() as connection:
         await connection.run_sync(SQLModel.metadata.create_all)
     yield
@@ -45,3 +42,4 @@ def system_health_check():
 
 app.include_router(auth.router)
 app.include_router(categories.router)
+app.include_router(products.router)
