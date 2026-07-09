@@ -72,6 +72,7 @@ class Product(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     category: Optional["Category"] = Relationship(back_populates="products")
+    order_items: List["OrderItem"] = Relationship(back_populates="product")
 
 
 class Order(SQLModel, table=True):
@@ -80,7 +81,7 @@ class Order(SQLModel, table=True):
     total_amount: float = Field(default=0.0)
     status: OrderStatus = Field(default=OrderStatus.PENDING)
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    user: User = Relationship(back_populates="orders")
+    user: Optional["User"] = Relationship(back_populates="orders")
     items: List["OrderItem"] = Relationship(back_populates="order")
     payments: List["Payment"] = Relationship(back_populates="order")
 
@@ -91,8 +92,8 @@ class OrderItem(SQLModel, table=True):
     product_id: int = Field(foreign_key="product.id", nullable=False)
     quantity: int = Field(default=1, nullable=False)
     price_at_purchase: float = Field(nullable=False)
-    order: Order = Relationship(back_populates="items")
-    product: Product = Relationship(back_populates="order_items")
+    order: Optional[Order] = Relationship(back_populates="items")
+    product: Optional[Product] = Relationship(back_populates="order_items")
 
 
 class Payment(SQLModel, table=True):
@@ -104,4 +105,5 @@ class Payment(SQLModel, table=True):
     gateway_payment_intent: Optional[str] = Field(default=None, unique=True)
     amount: float = Field(nullable=False)
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    order: Order = Relationship(back_populates="payments")
+    order: Optional[Order] = Relationship(back_populates="payments")
+
