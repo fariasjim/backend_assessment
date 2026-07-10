@@ -6,7 +6,6 @@ venv/
 ENV/
 env/
 *.db
-.env
 .docker/
 .idea/
 .vscode/
